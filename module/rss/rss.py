@@ -72,13 +72,15 @@ async def fetch_and_send_news(app: Client, db, global_settings_collection, urls)
                         elif yt_url.startswith("/"):
                             yt_url = "https://www.youtube.com" + yt_url
                         yt_url = extract_youtube_watch_url(yt_url)
+                        safe_id = "".join(c for c in str(entry_id) if c.isalnum())
                         ydl_opts = {
                             'format': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]',
-                            'outtmpl': '/tmp/ytvideo.%(ext)s',
+                            'outtmpl': f'/tmp/ytvideo_{safe_id}.%(ext)s',
                             'quiet': True,
                             'cookiefile': './cookies.txt',
                             'merge_output_format': 'mp4',
                         }
+                        video_path = None
                         try:
                             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                                 info = ydl.extract_info(yt_url, download=True)
@@ -87,6 +89,13 @@ async def fetch_and_send_news(app: Client, db, global_settings_collection, urls)
                             await app.send_video(chat_id=news_channel, video=video_path, caption=video_caption)
                         except Exception as e:
                             print(f"yt-dlp error for {yt_url}: {e}")
+                        finally:
+                            import os
+                            if video_path and os.path.exists(video_path):
+                                try:
+                                    os.remove(video_path)
+                                except Exception as e:
+                                    print(f"Error deleting temp video file: {e}")
                 except Exception as e:
                     print(f"Error fetching/sending video: {e}")
             except Exception as e:
