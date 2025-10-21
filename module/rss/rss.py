@@ -145,7 +145,7 @@ async def format_rss_entry(entry):
         thumbnail_url = await get_ann_image(guid_url)
 
     msg = (
-        f"<b><blockquote>{title}</blockquote></b>\n"
+        f"<b><block>{title}</block></b>\n"
         f"<b><blockquote expandable><i>{summary}</i></blockquote expandable>\n"
         f"<b><blockquote><a href='{link}'>Read Full News</a></b></blockquote>"
     )
